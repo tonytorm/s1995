@@ -6,17 +6,18 @@ A  VST3 plugin that emulates the characteristics of old-school ADC/DAC sampler c
 
 ## Implementation Details
 
-### Anti-Aliasing Filter
-A **6th order Butterworth** filter is applied to emulate the frequency response of vintage samplers and prevent aliasing during the sampling process.
+### Asymmetrical Saturation
+Asymmetrical Saturation is implemented to emulate the inaccuracies and non-linearities found in vintage analog-to-digital converters. Adding subtle harmonic distortion, enhancing the character of the processed audio by introducing odd and even harmonics differently depending on the signal polarity.
 
 ### Bit Depth Reduction
-The signal undergoes bit depth reduction, introducing quantization artifacts that mimic the resolution limits of classic samplers.
+The signal undergoes anti-aliasing and bit depth reduction, introducing quantization artifacts that mimic the resolution limits of classic samplers.
 
 ### Sample Rate Decimation
 The divide-rate technique is used for sample rate reduction.
 
+### Classic Low Pass filter
+A **6th order Butterworth** filter is applied to emulate the classic s950 filter sound.
+
 #### Planned Features
 
 Variable Sample Rate Reduction: A parameter to adjust the degree of decimation dynamically, offering more control over the lo-fi effect.
-
-**The project is a personal exploration into audio processing and vintage sampler emulation.**
