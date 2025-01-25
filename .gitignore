@@ -1,0 +1,45 @@
+# Build directories
+build/
+Builds/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Binary outputs
+*.so
+*.dll
+*.dylib
+*.exe
+*.vst3
+*.aaxplugin
+*.component
+*.lv2
+*.zip
+
+# JUCE-related
+JUCE/
+JUCE/.*
+JUCE/**
+
+# IDE-specific files
+.idea/
+.vscode/
+*.sln
+*.vcxproj*
+*.xcodeproj
+*.xcworkspace
+
+# macOS-specific
+.DS_Store
+*.plist
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# Generated binary data
+BinaryData.*
