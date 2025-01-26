@@ -29,13 +29,13 @@ public:
     void updateCurrentTooltipValue();
     
     std::unique_ptr<juce::Drawable> loadLogoFromSVGData();
+    std::array<std::unique_ptr<CustomSlider>, 3> sliders;
 
 private:
     const int numSliders = 3;
     const int padding = 4;
     const int meterWidth = 60;
 
-    std::array<std::unique_ptr<CustomSlider>, 3> sliders;
     std::array<std::string, 3> sliderNames {"INPUT GAIN", "LOPASS", "OUTPUT LEVEL"};
     std::array<std::string, 3> tooltipSuffix {" dB", "", " dB"};
     Rectangle<int> logoArea;

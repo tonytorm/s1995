@@ -22,32 +22,33 @@ audioMeter(p.audioMeterSource)
         slider->addMouseListener(this, false);
         addAndMakeVisible(*slider);
         
-        // Configurazione specifica per ogni slider
         if (s == 0){ // Gain Slider
         
+            auto parameter = parameters.getParameter("inputGain");
             slider->sliderMainColour = {219, 92, 91};
             slider->setRange(0.f, 1.f);
-            slider->setValue(0.1f);
-            
-            slider->onValueChange = [this, &slider] {
+            slider->setValue(parameter->getValue());
+
+            slider->onValueChange = [this, &slider, parameter] {
                 float normalized = slider->getValue();
-                parameters.getParameter("inputGain")->setValueNotifyingHost(normalized);
-                slider->setTooltip(String(*parameters.getRawParameterValue("inputGain")));
+                parameter->setValueNotifyingHost(normalized);
             };
+            
         }else if (s == 1){ // Cutoff Slider
         
             auto* parameter = parameters.getParameter("cutofffrequency");
+            slider->setRange(100.f, 15000.f);
+            slider->setValue(parameter->getValue());
             cutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(parameters, "cutofffrequency", *slider);
-            slider->setRange(parameter->getNormalisableRange().start, parameter->getNormalisableRange().end);
-            slider->setValue(parameter->getNormalisableRange().end);
         }else if (s == 2){ // Output Slider
         
+            auto parameter = parameters.getParameter("outputGain");
             slider->setRange(0.f, 1.f);
-            slider->setValue(0.4f);
+            slider->setValue(parameter->getValue());
             
-            slider->onValueChange = [this, &slider] {
+            slider->onValueChange = [this, &slider, parameter] {
                 float normalized = slider->getValue();
-                parameters.getParameter("outputGain")->setValueNotifyingHost(normalized);
+                parameter->setValueNotifyingHost(normalized);
             };
         }
     }

@@ -118,11 +118,18 @@ void s1995PluginAudioProcessor::releaseResources(){
 }
 
 void s1995PluginAudioProcessor::getStateInformation(juce::MemoryBlock& destData){
-    
+    auto state = parameters.copyState();
+    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    copyXmlToBinary(*xml, destData);
 }
 
 void s1995PluginAudioProcessor::setStateInformation(const void* data, int sizeInBytes){
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (parameters.state.getType()))
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
+
 }
 
 
