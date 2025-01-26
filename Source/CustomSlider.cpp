@@ -6,6 +6,7 @@
 //
 
 #include "CustomSlider.hpp"
+#include "s1995PluginAudioProcessorEditor.hpp"
 
 CustomSlider::CustomSlider() : juce::Slider() {
     setTextBoxStyle(TextEntryBoxPosition::NoTextBox, true, 0, 0);
@@ -16,7 +17,7 @@ CustomSlider::CustomSlider() : juce::Slider() {
 void CustomSlider::paint(juce::Graphics& g) {
     constexpr float pi = juce::MathConstants<float>::pi;
     constexpr float ellipsePadding = 0.1f;
-    constexpr float innerEllipsePadding = 0.25f;
+    constexpr float outerEllipsePadding = 0.25f;
     constexpr float dotRadiusFactor = 0.075f;
     constexpr int numDots = 14;
     constexpr float thumbWidth = 3.0f;
@@ -35,10 +36,10 @@ void CustomSlider::paint(juce::Graphics& g) {
     bounds = bounds.removeFromBottom(componentWidth).withSizeKeepingCentre(componentWidth, componentWidth);
     
     g.setColour(sliderMainColour);
-    g.fillEllipse(bounds.reduced(componentWidth * innerEllipsePadding));
+    g.fillEllipse(bounds.reduced(componentWidth * outerEllipsePadding));
 
     g.setColour(juce::Colours::darkgrey.withAlpha(0.3f));
-    g.drawEllipse(bounds.reduced(componentWidth * innerEllipsePadding), 1.0f);
+    g.drawEllipse(bounds.reduced(componentWidth * outerEllipsePadding), 1.0f);
     
     g.setColour({207, 207, 207});
     g.fillEllipse(bounds.reduced(componentWidth * 0.3f));
@@ -78,7 +79,7 @@ void CustomSlider::paint(juce::Graphics& g) {
     
     rectangle.setCentre(thumbPoint);
     
-    // Rotate the rectangle to point toward the center of the slider
+    // rotate the rectangle to point toward the center of the slider
     juce::AffineTransform transform = juce::AffineTransform::rotation(angleToCenter, thumbPoint.x, thumbPoint.y);
     Path p;
     p.addRoundedRectangle(rectangle, 3.f, 3.f);
@@ -86,4 +87,3 @@ void CustomSlider::paint(juce::Graphics& g) {
     g.fillPath(p, transform);
     
 }
-

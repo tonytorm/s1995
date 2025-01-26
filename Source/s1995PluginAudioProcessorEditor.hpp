@@ -26,7 +26,7 @@ public:
     void mouseDown(const juce::MouseEvent& event) override;
     void mouseDrag(const juce::MouseEvent& event) override;
     
-    void updateHoveredSlider(CustomSlider* slider);
+    void updateCurrentTooltipValue();
     
     std::unique_ptr<juce::Drawable> loadLogoFromSVGData();
 
@@ -43,7 +43,6 @@ private:
     std::unique_ptr<juce::Drawable> logoDrawable;
     int hoveredSliderIndex = -1;
     juce::String currentTooltipValue = "";
-    juce::Rectangle<int> tooltipBox;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> cutoffAttachment;
     

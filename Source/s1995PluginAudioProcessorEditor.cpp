@@ -15,48 +15,46 @@ audioMeter(p.audioMeterSource)
 {
     
     for (int s = 0; s < numSliders; ++s){
-        sliders[s] = std::make_unique<CustomSlider>();
-        sliders[s]->setName(sliderNames[s]);
-        sliders[s]->setTitle(audioProcessor.parameterIDs[s]);
-        addAndMakeVisible(*sliders[s]);
-        sliders[s]->addMouseListener(this, false);
+        auto& slider = sliders[s];
+        slider = std::make_unique<CustomSlider>();
+        slider->setName(sliderNames[s]);
+        slider->setTitle(audioProcessor.parameterIDs[s]);
+        slider->addMouseListener(this, false);
+        addAndMakeVisible(*slider);
+        
+        // Configurazione specifica per ogni slider
+        if (s == 0){ // Gain Slider
+        
+            slider->sliderMainColour = {219, 92, 91};
+            slider->setRange(0.f, 1.f);
+            slider->setValue(0.1f);
+            
+            slider->onValueChange = [this, &slider] {
+                float normalized = slider->getValue();
+                parameters.getParameter("inputGain")->setValueNotifyingHost(normalized);
+                slider->setTooltip(String(*parameters.getRawParameterValue("inputGain")));
+            };
+        }else if (s == 1){ // Cutoff Slider
+        
+            auto* parameter = parameters.getParameter("cutofffrequency");
+            cutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(parameters, "cutofffrequency", *slider);
+            slider->setRange(parameter->getNormalisableRange().start, parameter->getNormalisableRange().end);
+            slider->setValue(parameter->getNormalisableRange().end);
+        }else if (s == 2){ // Output Slider
+        
+            slider->setRange(0.f, 1.f);
+            slider->setValue(0.4f);
+            
+            slider->onValueChange = [this, &slider] {
+                float normalized = slider->getValue();
+                parameters.getParameter("outputGain")->setValueNotifyingHost(normalized);
+            };
+        }
     }
-
-    CustomSlider* gainSlider = sliders[0].get();
-    
-    gainSlider->sliderMainColour = {219, 92, 91};
-    gainSlider->setRange(0.f, 1.f);
-    gainSlider->setValue(0.1f);
-
-    
-    gainSlider->onValueChange = [this, gainSlider]{
-        float normalized = gainSlider->getValue();
-        parameters.getParameter("inputGain")->setValueNotifyingHost(normalized);
-        gainSlider->setTooltip(String(*parameters.getRawParameterValue("inputGain")));
-    };
     
     logoDrawable = loadLogoFromSVGData();
-    setSize(500, 100);
-    
-    auto parameter = parameters.getParameter("cutofffrequency");
-    cutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(parameters, "cutofffrequency", *sliders[1]);
-    sliders[1]->setRange(parameter->getNormalisableRange().start, parameter->getNormalisableRange().end);
-    sliders[1]->setValue(parameter->getNormalisableRange().end);
-    
-    sliders[1]->onValueChange = [this]{
-        std::cout << "cutoff: " << *parameters.getRawParameterValue("cutofffrequency") << '\n';
-    };
-    
-    sliders[2]->setRange(0.f, 1.f);
-    sliders[2]->setValue(0.4f);
-    CustomSlider* outSlider = sliders[2].get();
-    
-    outSlider->onValueChange = [this, outSlider]{
-        float normalized = outSlider->getValue();
-        parameters.getParameter("outputGain")->setValueNotifyingHost(normalized);
-    };
-    
     addAndMakeVisible(audioMeter);
+    setSize(500, 100);
 }
 
 s1995PluginAudioProcessorEditor::~s1995PluginAudioProcessorEditor() {
@@ -116,8 +114,19 @@ void s1995PluginAudioProcessorEditor::paint(juce::Graphics& g){
     );
     
     if (hoveredSliderIndex != -1){
-        g.setColour(juce::Colours::black);
-        g.fillRoundedRectangle(tooltipBox.toFloat(), 5.0f);
+        Rectangle<int> sliderComponentBounds = sliders[hoveredSliderIndex]->getBounds(); // outer bounds
+        Rectangle<int> knobBounds = sliderComponentBounds.reduced(sliderComponentBounds.getWidth() * 0.25f);
+        int radius = knobBounds.getWidth()/2;
+        
+        const int tooltipBoxWidth = 48;
+        const int tooltipBoxHeight = 20;
+        const int tooltipBoxX = hoveredSliderIndex == 2 ? knobBounds.getX()-tooltipBoxWidth : knobBounds.getRight();
+        const int tooltipBoxY = knobBounds.getCentreY() - tooltipBoxHeight/2;
+        
+        Rectangle<int>tooltipBox = {tooltipBoxX, tooltipBoxY, tooltipBoxWidth, tooltipBoxHeight};
+        
+        g.setColour(juce::Colours::black.withAlpha(0.7f));
+        g.fillRoundedRectangle(tooltipBox.toFloat(), 4.0f);
         
         g.setColour(juce::Colours::white);
         g.setFont(juce::Font(11.0f, juce::Font::bold));
@@ -151,22 +160,7 @@ void s1995PluginAudioProcessorEditor::mouseEnter(const juce::MouseEvent& event){
     for (int i = 0; i < numSliders; ++i){
         if (event.eventComponent == sliders[i].get()){
             hoveredSliderIndex = i;
-
-            auto sliderBounds = sliders[i]->getBounds();
-            bool last = i == numSliders-1;
-            int x = last? sliderBounds.getX()-26 : sliderBounds.getRight()-18;
-            tooltipBox = {x, sliderBounds.getCentreY()-8, 44, 16};
-            auto parameter = parameters.getParameter(sliders[hoveredSliderIndex]->getTitle());
-            if(hoveredSliderIndex==1){
-                currentTooltipValue = juce::String((int)jmap((float)*parameters.getRawParameterValue(parameter->paramID),
-                                                        100.f,
-                                                        15000.f,
-                                                        1.f,
-                                                        99.f));
-            }else{
-                currentTooltipValue = juce::String(*parameters.getRawParameterValue(parameter->paramID), 1);
-            }
-            repaint();
+            updateCurrentTooltipValue();
             break;
         }
     }
@@ -181,32 +175,22 @@ void s1995PluginAudioProcessorEditor::mouseExit(const juce::MouseEvent& event){
 
 void s1995PluginAudioProcessorEditor::mouseDown(const juce::MouseEvent &event){
     if (hoveredSliderIndex != -1){
-        auto parameter = parameters.getParameter(sliders[hoveredSliderIndex]->getTitle());
-        if(hoveredSliderIndex==1){
-            currentTooltipValue = juce::String((int)jmap((float)*parameters.getRawParameterValue(parameter->paramID),
-                                                         100.f,
-                                                         15000.f,
-                                                         1.f,
-                                                         99.f));
-        }else{
-            currentTooltipValue = juce::String(*parameters.getRawParameterValue(parameter->paramID), 1);
-        }
-        repaint();
+        updateCurrentTooltipValue();
     }
 }
 
 void s1995PluginAudioProcessorEditor::mouseDrag(const juce::MouseEvent &event){
     if (hoveredSliderIndex != -1){
-        auto parameter = parameters.getParameter(sliders[hoveredSliderIndex]->getTitle());
-        if(hoveredSliderIndex==1){
-            currentTooltipValue = juce::String((int)jmap((float)*parameters.getRawParameterValue(parameter->paramID),
-                                                         100.f,
-                                                         15000.f,
-                                                         1.f,
-                                                         99.f));
-        }else{
-            currentTooltipValue = juce::String(*parameters.getRawParameterValue(parameter->paramID), 1);
-        }
-        repaint();
+        updateCurrentTooltipValue();
     }
+}
+
+void s1995PluginAudioProcessorEditor::updateCurrentTooltipValue(){
+    auto parameter = parameters.getParameter(sliders[hoveredSliderIndex]->getTitle());
+    if(hoveredSliderIndex==1){
+        currentTooltipValue = juce::String((int)jmap((float)*parameters.getRawParameterValue(parameter->paramID), 100.f, 15000.f, 1.f, 99.f));
+    }else{
+        currentTooltipValue = juce::String(*parameters.getRawParameterValue(parameter->paramID), 1);
+    }
+    repaint();
 }
