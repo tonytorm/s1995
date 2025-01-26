@@ -21,6 +21,13 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
     
+    void mouseEnter(const juce::MouseEvent& event) override;
+    void mouseExit(const juce::MouseEvent& event) override;
+    void mouseDown(const juce::MouseEvent& event) override;
+    void mouseDrag(const juce::MouseEvent& event) override;
+    
+    void updateHoveredSlider(CustomSlider* slider);
+    
     std::unique_ptr<juce::Drawable> loadLogoFromSVGData();
 
 private:
@@ -30,12 +37,15 @@ private:
 
     std::array<std::unique_ptr<CustomSlider>, 3> sliders;
     std::array<std::string, 3> sliderNames {"INPUT GAIN", "LOPASS", "OUTPUT LEVEL"};
+    std::array<std::string, 3> tooltipSuffix {" dB", "", " dB"};
     Rectangle<int> logoArea;
     AudioMeter audioMeter;
     std::unique_ptr<juce::Drawable> logoDrawable;
+    int hoveredSliderIndex = -1;
+    juce::String currentTooltipValue = "";
+    juce::Rectangle<int> tooltipBox;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> cutoffAttachment;
-
     
         
     s1995PluginAudioProcessor& audioProcessor;

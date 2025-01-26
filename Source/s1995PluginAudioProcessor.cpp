@@ -72,8 +72,8 @@ AudioProcessor(BusesProperties()
                .withOutput("Output", AudioChannelSet::stereo(), true)),
 parameters(*this, nullptr, "PARAMETERS",
            {std::make_unique<juce::AudioParameterFloat>("inputGain","InputGain", juce::NormalisableRange<float>(-60.f, 20.f, convertGainFrom0To1InGain, convertGainTo0To1InGain), 0.f),
-            std::make_unique<AudioParameterFloat>("outputGain", "OutputGain", juce::NormalisableRange<float>(-60.f, 9.f, convertGainFrom0To1OutGain, convertGainTo0To1OutGain), 0.f),
-            std::make_unique<AudioParameterFloat>("cutofffrequency", "CutoffFrequency", 100.f, 15000.f, 15000.f)}),
+            std::make_unique<AudioParameterFloat>("cutofffrequency", "CutoffFrequency", 100.f, 15000.f, 15000.f),
+            std::make_unique<AudioParameterFloat>("outputGain", "OutputGain", juce::NormalisableRange<float>(-60.f, 9.f, convertGainFrom0To1OutGain, convertGainTo0To1OutGain), 0.f)}),
 preadcChain(parameters)
 {
 }

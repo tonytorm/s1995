@@ -16,7 +16,10 @@ audioMeter(p.audioMeterSource)
     
     for (int s = 0; s < numSliders; ++s){
         sliders[s] = std::make_unique<CustomSlider>();
+        sliders[s]->setName(sliderNames[s]);
+        sliders[s]->setTitle(audioProcessor.parameterIDs[s]);
         addAndMakeVisible(*sliders[s]);
+        sliders[s]->addMouseListener(this, false);
     }
 
     CustomSlider* gainSlider = sliders[0].get();
@@ -25,9 +28,11 @@ audioMeter(p.audioMeterSource)
     gainSlider->setRange(0.f, 1.f);
     gainSlider->setValue(0.1f);
 
+    
     gainSlider->onValueChange = [this, gainSlider]{
         float normalized = gainSlider->getValue();
         parameters.getParameter("inputGain")->setValueNotifyingHost(normalized);
+        gainSlider->setTooltip(String(*parameters.getRawParameterValue("inputGain")));
     };
     
     logoDrawable = loadLogoFromSVGData();
@@ -109,6 +114,15 @@ void s1995PluginAudioProcessorEditor::paint(juce::Graphics& g){
         logoYOffset,
         logoScale
     );
+    
+    if (hoveredSliderIndex != -1){
+        g.setColour(juce::Colours::black);
+        g.fillRoundedRectangle(tooltipBox.toFloat(), 5.0f);
+        
+        g.setColour(juce::Colours::white);
+        g.setFont(juce::Font(11.0f, juce::Font::bold));
+        g.drawText(currentTooltipValue + tooltipSuffix[hoveredSliderIndex], tooltipBox, juce::Justification::centred);
+    }
 }
 
 void s1995PluginAudioProcessorEditor::resized(){
@@ -131,4 +145,68 @@ void s1995PluginAudioProcessorEditor::resized(){
 
 std::unique_ptr<juce::Drawable> s1995PluginAudioProcessorEditor::loadLogoFromSVGData(){
     return juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize);
+}
+
+void s1995PluginAudioProcessorEditor::mouseEnter(const juce::MouseEvent& event){
+    for (int i = 0; i < numSliders; ++i){
+        if (event.eventComponent == sliders[i].get()){
+            hoveredSliderIndex = i;
+
+            auto sliderBounds = sliders[i]->getBounds();
+            bool last = i == numSliders-1;
+            int x = last? sliderBounds.getX()-26 : sliderBounds.getRight()-18;
+            tooltipBox = {x, sliderBounds.getCentreY()-8, 44, 16};
+            auto parameter = parameters.getParameter(sliders[hoveredSliderIndex]->getTitle());
+            if(hoveredSliderIndex==1){
+                currentTooltipValue = juce::String((int)jmap((float)*parameters.getRawParameterValue(parameter->paramID),
+                                                        100.f,
+                                                        15000.f,
+                                                        1.f,
+                                                        99.f));
+            }else{
+                currentTooltipValue = juce::String(*parameters.getRawParameterValue(parameter->paramID), 1);
+            }
+            repaint();
+            break;
+        }
+    }
+}
+
+void s1995PluginAudioProcessorEditor::mouseExit(const juce::MouseEvent& event){
+    if (hoveredSliderIndex != -1 && event.eventComponent == sliders[hoveredSliderIndex].get()){
+        hoveredSliderIndex = -1;
+        repaint();
+    }
+}
+
+void s1995PluginAudioProcessorEditor::mouseDown(const juce::MouseEvent &event){
+    if (hoveredSliderIndex != -1){
+        auto parameter = parameters.getParameter(sliders[hoveredSliderIndex]->getTitle());
+        if(hoveredSliderIndex==1){
+            currentTooltipValue = juce::String((int)jmap((float)*parameters.getRawParameterValue(parameter->paramID),
+                                                         100.f,
+                                                         15000.f,
+                                                         1.f,
+                                                         99.f));
+        }else{
+            currentTooltipValue = juce::String(*parameters.getRawParameterValue(parameter->paramID), 1);
+        }
+        repaint();
+    }
+}
+
+void s1995PluginAudioProcessorEditor::mouseDrag(const juce::MouseEvent &event){
+    if (hoveredSliderIndex != -1){
+        auto parameter = parameters.getParameter(sliders[hoveredSliderIndex]->getTitle());
+        if(hoveredSliderIndex==1){
+            currentTooltipValue = juce::String((int)jmap((float)*parameters.getRawParameterValue(parameter->paramID),
+                                                         100.f,
+                                                         15000.f,
+                                                         1.f,
+                                                         99.f));
+        }else{
+            currentTooltipValue = juce::String(*parameters.getRawParameterValue(parameter->paramID), 1);
+        }
+        repaint();
+    }
 }

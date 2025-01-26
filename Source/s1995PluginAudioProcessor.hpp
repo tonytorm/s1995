@@ -45,6 +45,7 @@ public:
     juce::AudioProcessorValueTreeState parameters;
     AudioMeterProcessor audioMeterSource;
     
+    std::array<std::string, 3> parameterIDs {"inputGain", "cutofffrequency", "outputGain"};
 private:
 
     PreADCChain preadcChain;
