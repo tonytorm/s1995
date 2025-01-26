@@ -21,3 +21,9 @@ A **6th order Butterworth** filter is applied to emulate the classic s950 filter
 #### Planned Features
 
 Variable Sample Rate Reduction: A parameter to adjust the degree of decimation dynamically, offering more control over the lo-fi effect.
+
+
+
+
+## TO BUILD
+The project is open source, all you need to compile it is cmake and juce, note that the JUCE subdirectory path is hardcoded in the cmakelists file, you'll have to provide a path to your own juce repo.
