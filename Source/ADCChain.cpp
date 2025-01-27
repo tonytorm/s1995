@@ -10,6 +10,8 @@
 
 void ADCChain::prepare(juce::dsp::ProcessSpec& spec){
     
+    currentCutoff = spec.sampleRate/4.f; // nyquist of half sampleRate
+    
     auto coeffs1 = juce::dsp::IIR::Coefficients<float>::makeLowPass(
         spec.sampleRate,
         currentCutoff,
@@ -41,38 +43,28 @@ void ADCChain::prepare(juce::dsp::ProcessSpec& spec){
     butterworthRight.reset();
     
     totalQLevels = powf(2, bitDepth);
-    divideRateCounters.resize(spec.numChannels, 0);
     
 }
 
 void ADCChain::processBlock(juce::dsp::AudioBlock<float> inputBlock){    
-    
-   
-    
+        
     auto leftBlock = inputBlock.getSingleChannelBlock(0);
     auto rightBlock = inputBlock.getSingleChannelBlock(1);
     juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
     juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+
+    //TODO: perhaps vectorize? explored options require vfrac for rounding or vfix but then an integer
+    for (int channel = 0; channel < inputBlock.getNumChannels(); ++channel) {
+        auto* channelData = inputBlock.getChannelPointer(channel);
+        
+        for (int sample = 0; sample < inputBlock.getNumSamples(); ++sample) {
+            float val = channelData[sample];
+            val = std::round(val * totalQLevels) / totalQLevels;
+            channelData[sample] = val;
+        }
+    }
     
     butterworthLeft.process(leftContext);
     butterworthRight.process(rightContext);
-    
-    for (int channel = 0; channel < inputBlock.getNumChannels(); ++channel) {
-        auto* channelData = inputBlock.getChannelPointer(channel);
-        float heldSample = 0.0f;
-        
-        int& counter = divideRateCounters[channel];
-        
-        for (int sample = 0; sample < inputBlock.getNumSamples(); ++sample) {
-            if (counter % downsampleFactor == 0) {
-                float val = channelData[sample];
-                val = std::round(val * totalQLevels) / totalQLevels;
-                heldSample = val;
-            }
-            
-            channelData[sample] = heldSample;
-            counter++;
-        }
-    }
     
 }

@@ -23,9 +23,7 @@ private:
     juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Filter<float>> butterworthLeft;
     juce::dsp::ProcessorChain<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Filter<float>> butterworthRight;
     
-    std::vector<int> divideRateCounters;
     const int bitDepth = 12;
-    int downsampleFactor = 2;
     float totalQLevels = -1.f;
 
     float Q1 = 0.5175;
@@ -34,7 +32,7 @@ private:
     
     
     int sampleRate = 0;
-    float currentCutoff = 12000.0f;
+    float currentCutoff = 0.f;
     float drive = 1.0f;
     juce::Random thermalNoise;
 };
