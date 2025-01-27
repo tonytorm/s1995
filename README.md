@@ -12,9 +12,8 @@ Asymmetrical Saturation is implemented to emulate the inaccuracies and non-linea
 ### Bit Depth Reduction
 The signal undergoes anti-aliasing and bit depth reduction, introducing quantization artifacts that mimic the resolution limits of classic samplers.
 
-### ~~Sample Rate Decimation~~
-~~The divide-rate technique is used for sample rate reduction.~~
-Removed as was introducing unwanted high frequencies, noticed through A/B testing with other emulators.
+### Static sample-rate reduction effect
+achieved through the use of an emulation of the S950's anti-aliasing low-pass filter.
 
 ### Classic Low Pass filter
 A **6th order Butterworth** filter is applied to emulate the classic s950 filter sound.
