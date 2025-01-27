@@ -21,7 +21,7 @@ A **6th order Butterworth** filter is applied to emulate the classic s950 filter
 
 #### Planned Features
 
-Variable Sample Rate Reduction: A parameter to adjust the degree of decimation dynamically, offering more control over the lo-fi effect.
+Variable Sample Rate Reduction: A parameter to adjust the degree of decimation dynamically, offering more control over the lo-fi effect. Semitone-quantized pitch shifting.
 
 
 
