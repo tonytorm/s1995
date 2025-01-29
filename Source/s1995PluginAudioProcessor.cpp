@@ -99,6 +99,7 @@ void s1995PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
 
 
 void s1995PluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&) {
+    juce::ScopedNoDenormals noDenormals;
     juce::dsp::AudioBlock<float> inputBlock(buffer);
     
     preadcChain.process(inputBlock);
